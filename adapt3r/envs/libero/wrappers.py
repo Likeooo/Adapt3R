@@ -296,6 +296,9 @@ class LiberoWrapper(gymnasium.Env):
         self.cameras = cameras
         self.camera_pose_variations = camera_pose_variations
         self.abs_action = abs_action
+        self.cam_id = None
+        self.new_position = None
+        self.new_rotation = None
 
         self.device = device
 
@@ -357,9 +360,9 @@ class LiberoWrapper(gymnasium.Env):
 
             # rotation_angle_deg = 10
             camera_name = 'agentview'
-            cam_id = self.env.sim.model.camera_name2id(camera_name)
-            old_position = self.env.sim.model.cam_pos[cam_id].copy()
-            old_rotation = self.env.sim.model.cam_quat[cam_id].copy()
+            self.cam_id = self.env.sim.model.camera_name2id(camera_name)
+            old_position = self.env.sim.model.cam_pos[self.cam_id].copy()
+            old_rotation = self.env.sim.model.cam_quat[self.cam_id].copy()
 
             if type(camera_pose_variations) == str:
 
@@ -471,7 +474,12 @@ class LiberoWrapper(gymnasium.Env):
         else:
             self.env.set_init_state(self.env.get_sim_state().flatten())
 
-        if self.camera_pose_variations:
+        if (
+            self.camera_pose_variations
+            and self.cam_id is not None
+            and self.new_position is not None
+            and self.new_rotation is not None
+        ):
             self.env.sim.model.cam_pos[self.cam_id] = self.new_position
             self.env.sim.model.cam_quat[self.cam_id] = self.new_rotation
 
